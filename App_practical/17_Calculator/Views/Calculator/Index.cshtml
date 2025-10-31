@@ -6,8 +6,8 @@
 
 <style>
 body {
-    background: linear-gradient(135deg, #141E30, #243B55);
-    color: white;
+        background-color: #f5f5f5;
+        color: #222;
     font-family: 'Segoe UI', sans-serif;
 }
 
@@ -116,14 +116,13 @@ let operation = "";
 let isSecond = false;
 
 // Обновление дисплея с динамическим шрифтом
-function updateDisplay(value) {
-    display.textContent = value;
-
-    if (value.length <= 10) display.style.fontSize = "2.5rem";
-    else if (value.length <= 15) display.style.fontSize = "2rem";
-    else if (value.length <= 20) display.style.fontSize = "1.5rem";
-    else display.style.fontSize = "1.2rem";
-}
+    function updateDisplay(value) {
+        if (!isNaN(value) && value.toString().length > 12) {
+            value = Number(value).toExponential(5); // 5 знаков после точки
+        }
+        display.textContent = value;
+        display.style.fontSize = "2.5rem";
+    }
 
 // Кнопки
 function appendNum(num) {
