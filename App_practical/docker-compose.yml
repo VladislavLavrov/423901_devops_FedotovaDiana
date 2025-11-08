@@ -1,5 +1,4 @@
-
-services:     
+services:
   mariadb:
     container_name: web-mariadb-17
     hostname: mariadb
@@ -7,11 +6,11 @@ services:
     restart: always
     environment:
       MARIADB_ROOT_PASSWORD: password
-      MARIADB_DATABASE: webdb
-      MARIADB_USER: webdb
+      MARIADB_DATABASE: 17_CalculatorDb
+      MARIADB_USER: webuser
       MARIADB_PASSWORD: password
     ports:
-      - "0.0.0.0:5037:3306"
+      - "5037:3306"
 
       
   web:
