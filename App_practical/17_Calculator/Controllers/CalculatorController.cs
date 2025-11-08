@@ -1,16 +1,23 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Calculator.Data;
+using Calculator.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Calculator.Controllers
 {
     public class CalculatorController : Controller
     {
-        // Отображение страницы
+        private readonly ApplicationDbContext _context;
+
+        public CalculatorController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
         public IActionResult Index()
         {
             return View();
         }
 
-        // Серверный метод для вычислений (AJAX)
         [HttpPost]
         public JsonResult Calculate(double num1, double num2, string operation)
         {
@@ -33,9 +40,23 @@ namespace Calculator.Controllers
                     break;
             }
 
+            // Сохраняем результат в базу данных
+            if (string.IsNullOrEmpty(message))
+            {
+                var record = new DataInputVariant
+                {
+                    Operand_1 = num1,
+                    Operand_2 = num2,
+                    Type_operation = operation,
+                    Result = result
+                };
+
+                _context.DataInputVariants.Add(record);
+                _context.SaveChanges();
+            }
+
             return Json(new { result, message });
         }
     }
 }
-
 
