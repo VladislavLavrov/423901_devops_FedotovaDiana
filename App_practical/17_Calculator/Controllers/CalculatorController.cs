@@ -19,35 +19,35 @@ namespace Calculator.Controllers
         }
 
         [HttpPost]
-        public JsonResult Calculate(double num1, double num2, string operation)
+        public JsonResult Calculate([FromBody] CalculationRequest request)
         {
             double result = 0;
             string message = "";
 
-            switch (operation)
+            switch (request.Operation)
             {
-                case "+": result = num1 + num2; break;
-                case "-": result = num1 - num2; break;
-                case "*": result = num1 * num2; break;
+                case "+": result = request.Num1 + request.Num2; break;
+                case "-": result = request.Num1 - request.Num2; break;
+                case "*": result = request.Num1 * request.Num2; break;
                 case "/":
-                    if (num2 == 0)
+                    if (request.Num2 == 0)
                         message = "Ошибка: деление на ноль!";
                     else
-                        result = num1 / num2;
+                        result = request.Num1 / request.Num2;
                     break;
                 default:
                     message = "Неизвестная операция!";
                     break;
             }
 
-            // Сохраняем результат в базу данных
+            // Сохраняем в базу, если нет ошибки
             if (string.IsNullOrEmpty(message))
             {
                 var record = new DataInputVariant
                 {
-                    Operand_1 = num1,
-                    Operand_2 = num2,
-                    Type_operation = operation,
+                    Operand_1 = request.Num1,
+                    Operand_2 = request.Num2,
+                    Type_operation = request.Operation,
                     Result = result
                 };
 
@@ -59,4 +59,5 @@ namespace Calculator.Controllers
         }
     }
 }
+
 

@@ -143,27 +143,42 @@ function backspace() {
     else { num2 = num2.slice(0,-1); updateDisplay(num2 || "0"); }
 }
 
-// AJAX вычисление
-async function calculate() {
-    if (num1 === "" || num2 === "" || operation === "") return;
 
-    const params = new URLSearchParams({ num1, num2, operation });
-    const response = await fetch("/Calculator/Calculate", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params
-    });
+    async function calculate() {
+        if (num1 === "" || num2 === "" || operation === "") return;
 
-    const data = await response.json();
+        try {
+            const response = await fetch("/Calculator/Calculate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    num1: parseFloat(num1),
+                    num2: parseFloat(num2),
+                    operation: operation
+                })
+            });
 
-    if (data.message) updateDisplay(data.message);
-    else {
-        updateDisplay(data.result);
-        num1 = data.result;
-        num2 = "";
-        isSecond = false;
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText);
+            }
+
+            const data = await response.json();
+
+            if (data.message) {
+                updateDisplay(data.message);
+            } else {
+                updateDisplay(data.result);
+                num1 = data.result.toString();
+                num2 = "";
+                isSecond = false;
+            }
+        } catch (err) {
+            console.error("Ошибка:", err);
+            updateDisplay("Ошибка сервера!");
+        }
     }
-}
+
 
 // Анимация нажатия кнопок
 document.querySelectorAll('.btn').forEach(b => {
