@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Calculator.Controllers
 {
+    [Route("Calculator")]
     public class CalculatorController : Controller
     {
         private readonly ApplicationDbContext _context;
