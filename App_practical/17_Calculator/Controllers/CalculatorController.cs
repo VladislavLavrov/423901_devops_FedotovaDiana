@@ -18,7 +18,7 @@ namespace Calculator.Controllers
             return View();
         }
 
-        [HttpPost]
+        [HttpPost("Calculate")]
         public JsonResult Calculate([FromBody] CalculationRequest request)
         {
             double result = 0;

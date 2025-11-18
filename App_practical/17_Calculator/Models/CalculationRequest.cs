@@ -1,9 +1,6 @@
-﻿namespace Calculator.Models
+﻿public class CalculationRequest
 {
-    public class CalculationRequest
-    {
-        public double Num1 { get; set; }
-        public double Num2 { get; set; }
-        public string Operation { get; set; } = string.Empty;
-    }
+    public double Num1 { get; set; }
+    public double Num2 { get; set; }
+    public string Operation { get; set; }
 }
