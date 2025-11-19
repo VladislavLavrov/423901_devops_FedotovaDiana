@@ -1,5 +1,7 @@
 using Calculator.Data;
 using Microsoft.EntityFrameworkCore;
+using Confluent.Kafka;
+using Calculator.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,12 +13,19 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
+builder.Services.AddHttpClient();
+builder.Services.AddHostedService<KafkaConsumerService>();
+builder.Services.AddSingleton<KafkaProducerHandler>();
+builder.Services.AddSingleton<KafkaProducerService<Null, string>>(sp =>
+    new KafkaProducerService<Null, string>(sp.GetRequiredService<KafkaProducerHandler>().Producer));
+
 
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/Calculator/Error");
     app.UseHsts();
 }
 

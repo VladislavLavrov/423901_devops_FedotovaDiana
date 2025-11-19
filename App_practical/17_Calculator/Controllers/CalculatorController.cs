@@ -1,61 +1,63 @@
 ﻿using Calculator.Data;
 using Calculator.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
+using Calculator.Services;
+using Confluent.Kafka;
 
 namespace Calculator.Controllers
 {
     public class CalculatorController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly KafkaProducerService<Null, string> _producer;
 
-        public CalculatorController(ApplicationDbContext context)
+        public CalculatorController(ApplicationDbContext context, KafkaProducerService<Null, string> producer)
         {
             _context = context;
+            _producer = producer;
         }
 
         public IActionResult Index()
         {
-            return View();
+            var data = _context.DataInputVariants
+                        .OrderByDescending(x => x.ID_DataInputVariant)
+                        .ToList();
+            return View(data);
         }
 
         [HttpPost]
-        public JsonResult Calculate(double num1, double num2, string operation)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Calculate(double num1, double num2, Operation operation)
         {
-            double result = 0;
-            string message = "";
-
-            switch (operation)
+            var dataInputVariant = new DataInputVariant
             {
-                case "+": result = num1 + num2; break;
-                case "-": result = num1 - num2; break;
-                case "*": result = num1 * num2; break;
-                case "/":
-                    if (num2 == 0)
-                        message = "Ошибка: деление на ноль!";
-                    else
-                        result = num1 / num2;
-                    break;
-                default:
-                    message = "Неизвестная операция!";
-                    break;
-            }
+                Operand_1 = num1,
+                Operand_2 = num2,
+                Type_operation = operation
+            };
 
-            // Сохраняем результат в базу данных
-            if (string.IsNullOrEmpty(message))
-            {
-                var record = new DataInputVariant
-                {
-                    Operand_1 = num1,
-                    Operand_2 = num2,
-                    Type_operation = operation,
-                    Result = result
-                };
+            // Отправка данных в Kafka
+            await SendDataToKafka(dataInputVariant);
 
-                _context.DataInputVariants.Add(record);
-                _context.SaveChanges();
-            }
+            return RedirectToAction(nameof(Index));
 
-            return Json(new { result, message });
+
+        }
+
+        [HttpPost]
+        public IActionResult Callback([FromBody] DataInputVariant inputData)
+        {
+            // Сохранение результата в базу
+            _context.DataInputVariants.Add(inputData);
+            _context.SaveChanges();
+            return Ok();
+        }
+
+        private async Task SendDataToKafka(DataInputVariant dataInputVariant)
+        {
+            var json = JsonSerializer.Serialize(dataInputVariant);
+            await _producer.ProduceAsync("Fedotova", new Message<Null, string> { Value = json });
         }
     }
 }
