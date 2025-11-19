@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using Calculator.Services;
 using Confluent.Kafka;
+using Microsoft.Extensions.Logging;
 
 namespace Calculator.Controllers
 {
@@ -12,12 +13,14 @@ namespace Calculator.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly KafkaProducerService<Null, string> _producer;
+        private readonly ILogger<CalculatorController> _logger;
 
         public CalculatorController(ApplicationDbContext context, KafkaProducerService<Null, string> producer)
         {
 
             _context = context;
             _producer = producer;
+            _logger = logger;
         }
 
         public IActionResult Index()
@@ -31,6 +34,7 @@ namespace Calculator.Controllers
         [HttpPost]
         public async Task<IActionResult> Calculate(double num1, double num2, string operation)
         {
+
             try
             {
                 // Преобразуем строку операции в enum
@@ -43,7 +47,15 @@ namespace Calculator.Controllers
                     Operand_2 = num2,
                     Type_operation = op
                 };
-
+                try
+                {
+                    await SendDataToKafka(dataInputVariant);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Ошибка при отправке данных в Kafka");
+                    return StatusCode(500, "Internal Server Error");
+                }
                 // Отправка в Kafka
                 await SendDataToKafka(dataInputVariant);
 

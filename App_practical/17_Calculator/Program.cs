@@ -25,11 +25,16 @@ builder.Services.AddSingleton<KafkaProducerService<Null, string>>(sp =>
 var app = builder.Build();
 
 // Конфигурация pipeline
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage(); // покажет детальный стек ошибки
+}
+else
 {
     app.UseExceptionHandler("/Calculator/Error");
     app.UseHsts();
 }
+
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
