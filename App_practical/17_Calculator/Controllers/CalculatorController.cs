@@ -37,8 +37,15 @@ namespace Calculator.Controllers
         {
             try
             {
-                if (!Enum.TryParse<Operation>(operation, true, out var op))
-                    return Json(new { message = "Неверная операция" });
+                // Преобразуем символ операции в enum
+                Operation op = operation switch
+                {
+                    "+" => Operation.Add,
+                    "-" => Operation.Subtract,
+                    "*" => Operation.Multiply,
+                    "/" => Operation.Divide,
+                    _ => throw new ArgumentException("Неверная операция")
+                };
 
                 var dataInputVariant = new DataInputVariant
                 {
@@ -47,7 +54,7 @@ namespace Calculator.Controllers
                     Type_operation = op
                 };
 
-                // --- Отправка в Kafka ---
+                // --- Отправка в Kafka (если доступна) ---
                 try
                 {
                     await SendDataToKafka(dataInputVariant);
@@ -62,12 +69,17 @@ namespace Calculator.Controllers
 
                 return Json(new { result = result.ToString() });
             }
+            catch (ArgumentException ex)
+            {
+                return Json(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Ошибка в Calculate()");
                 return Json(new { message = "Произошла ошибка на сервере" });
             }
         }
+
 
         [HttpPost]
         public IActionResult Callback([FromBody] DataInputVariant inputData)
