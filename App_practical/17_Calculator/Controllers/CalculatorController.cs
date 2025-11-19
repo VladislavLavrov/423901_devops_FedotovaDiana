@@ -15,13 +15,13 @@ namespace Calculator.Controllers
         private readonly KafkaProducerService<Null, string> _producer;
         private readonly ILogger<CalculatorController> _logger;
 
-        public CalculatorController(ApplicationDbContext context, KafkaProducerService<Null, string> producer)
+        public CalculatorController(ApplicationDbContext context, KafkaProducerService<Null, string> producer, ILogger<CalculatorController> logger)
         {
-
             _context = context;
             _producer = producer;
-            _logger = logger;
+            _logger = logger; // теперь инициализация правильная
         }
+
 
         public IActionResult Index()
         {
