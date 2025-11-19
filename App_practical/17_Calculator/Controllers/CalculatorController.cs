@@ -21,7 +21,7 @@ namespace Calculator.Controllers
         {
             _context = context;
             _producer = producer;
-            _logger = logger; // теперь правильно
+            _logger = logger;
         }
 
         public IActionResult Index()
@@ -37,7 +37,6 @@ namespace Calculator.Controllers
         {
             try
             {
-                // Преобразуем строку операции в enum
                 if (!Enum.TryParse<Operation>(operation, true, out var op))
                     return Json(new { message = "Неверная операция" });
 
@@ -48,24 +47,24 @@ namespace Calculator.Controllers
                     Type_operation = op
                 };
 
+                // --- Отправка в Kafka ---
                 try
                 {
                     await SendDataToKafka(dataInputVariant);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Ошибка при отправке данных в Kafka");
-                    return StatusCode(500, "Ошибка Kafka");
+                    _logger.LogError(ex, "Kafka недоступна — пропускаем отправку");
                 }
 
-                // Расчёт результата сразу для фронтенда
+                // --- Мгновенный расчёт для UI ---
                 var result = CalculatorLibrary.CalculateOperation(num1, num2, op);
 
                 return Json(new { result = result.ToString() });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Ошибка в методе Calculate");
+                _logger.LogError(ex, "Ошибка в Calculate()");
                 return Json(new { message = "Произошла ошибка на сервере" });
             }
         }
@@ -81,7 +80,7 @@ namespace Calculator.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Ошибка при сохранении результата в базу");
+                _logger.LogError(ex, "Ошибка при сохранении результата");
                 return StatusCode(500, "Ошибка сохранения");
             }
         }
