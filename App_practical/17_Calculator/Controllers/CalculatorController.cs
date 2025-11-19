@@ -29,37 +29,38 @@ namespace Calculator.Controllers
         }
 
         [HttpPost]
-        //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> Calculate(double num1, double num2, Operation operation)
+        public async Task<IActionResult> Calculate(double num1, double num2, string operation)
         {
-            var dataInputVariant = new DataInputVariant
+            try
             {
-                Operand_1 = num1,
-                Operand_2 = num2,
-                Type_operation = operation
-            };
+                // Преобразуем строку операции в enum
+                if (!Enum.TryParse<Operation>(operation, true, out var op))
+                    return Json(new { message = "Неверная операция" });
 
-            // Отправка данных в Kafka
-            await SendDataToKafka(dataInputVariant);
+                var dataInputVariant = new DataInputVariant
+                {
+                    Operand_1 = num1,
+                    Operand_2 = num2,
+                    Type_operation = op
+                };
 
-            return RedirectToAction(nameof(Index));
+                // Отправка в Kafka
+                await SendDataToKafka(dataInputVariant);
 
-            // Вычисляем результат сразу
-            var result = CalculatorLibrary.CalculateOperation(num1, num2, operation);
-            dataInputVariant.Result = result.ToString();
+                // Расчёт результата сразу для фронтенда
+                var result = CalculatorLibrary.CalculateOperation(num1, num2, op);
 
-            // Сохраняем в базу
-            _context.DataInputVariants.Add(dataInputVariant);
-            _context.SaveChanges();
-
-            // Отправка данных в Kafka
-            await SendDataToKafka(dataInputVariant);
-
-            // Возвращаем JSON для AJAX
-            return Json(new { result = dataInputVariant.Result });
-
-
+                return Json(new { result = result.ToString() });
+            }
+            catch (Exception ex)
+            {
+                // Логируем ошибку в консоль (или через ILogger, если есть)
+                Console.WriteLine($"Ошибка в Calculate: {ex.Message}\n{ex.StackTrace}");
+                return Json(new { message = "Произошла ошибка на сервере" });
+            }
         }
+
+
 
         [HttpPost]
         public IActionResult Callback([FromBody] DataInputVariant inputData)
