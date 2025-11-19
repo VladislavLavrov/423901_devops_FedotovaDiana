@@ -5,39 +5,59 @@ using Calculator.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Читаем строку подключения из appsettings.json
+// ---------------------
+// ЛОГИРОВАНИЕ
+// ---------------------
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
+// ---------------------
+// БАЗА ДАННЫХ
+// ---------------------
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// Регистрируем контекст базы данных с Pomelo (для MariaDB)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
+
+// ---------------------
+// MVC + HTTP CLIENT
+// ---------------------
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddHttpClient();
 
-// Регистрируем Kafka Consumer и Producer
+
+// ---------------------
+// KAFKA
+// ---------------------
 builder.Services.AddHostedService<KafkaConsumerService>();
+
 builder.Services.AddSingleton<KafkaProducerHandler>();
 builder.Services.AddSingleton<KafkaProducerService<Null, string>>(sp =>
-    new KafkaProducerService<Null, string>(sp.GetRequiredService<KafkaProducerHandler>().Producer));
+    new KafkaProducerService<Null, string>(
+        sp.GetRequiredService<KafkaProducerHandler>().Producer));
+
+
 
 var app = builder.Build();
 
-// Конфигурация pipeline
-if (app.Environment.IsDevelopment())
-{
-    app.UseDeveloperExceptionPage(); // покажет детальный стек ошибки
-}
-else
+// ---------------------
+// PIPELINE
+// ---------------------
+if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Calculator/Error");
     app.UseHsts();
 }
-
+else
+{
+    app.UseDeveloperExceptionPage();
+}
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
 app.UseRouting();
 app.UseAuthorization();
 
@@ -46,4 +66,3 @@ app.MapControllerRoute(
     pattern: "{controller=Calculator}/{action=Index}/{id?}");
 
 app.Run();
-

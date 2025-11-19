@@ -8,20 +8,21 @@ using Microsoft.Extensions.Logging;
 
 namespace Calculator.Controllers
 {
-
     public class CalculatorController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly KafkaProducerService<Null, string> _producer;
         private readonly ILogger<CalculatorController> _logger;
 
-        public CalculatorController(ApplicationDbContext context, KafkaProducerService<Null, string> producer, ILogger<CalculatorController> logger)
+        public CalculatorController(
+            ApplicationDbContext context,
+            KafkaProducerService<Null, string> producer,
+            ILogger<CalculatorController> logger)
         {
             _context = context;
             _producer = producer;
-            _logger = logger; // теперь инициализация правильная
+            _logger = logger; // теперь правильно
         }
-
 
         public IActionResult Index()
         {
@@ -34,7 +35,6 @@ namespace Calculator.Controllers
         [HttpPost]
         public async Task<IActionResult> Calculate(double num1, double num2, string operation)
         {
-
             try
             {
                 // Преобразуем строку операции в enum
@@ -47,6 +47,7 @@ namespace Calculator.Controllers
                     Operand_2 = num2,
                     Type_operation = op
                 };
+
                 try
                 {
                     await SendDataToKafka(dataInputVariant);
@@ -54,10 +55,8 @@ namespace Calculator.Controllers
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Ошибка при отправке данных в Kafka");
-                    return StatusCode(500, "Internal Server Error");
+                    return StatusCode(500, "Ошибка Kafka");
                 }
-                // Отправка в Kafka
-                await SendDataToKafka(dataInputVariant);
 
                 // Расчёт результата сразу для фронтенда
                 var result = CalculatorLibrary.CalculateOperation(num1, num2, op);
@@ -66,21 +65,25 @@ namespace Calculator.Controllers
             }
             catch (Exception ex)
             {
-                // Логируем ошибку в консоль (или через ILogger, если есть)
-                Console.WriteLine($"Ошибка в Calculate: {ex.Message}\n{ex.StackTrace}");
+                _logger.LogError(ex, "Ошибка в методе Calculate");
                 return Json(new { message = "Произошла ошибка на сервере" });
             }
         }
 
-
-
         [HttpPost]
         public IActionResult Callback([FromBody] DataInputVariant inputData)
         {
-            // Сохранение результата в базу
-            _context.DataInputVariants.Add(inputData);
-            _context.SaveChanges();
-            return Ok();
+            try
+            {
+                _context.DataInputVariants.Add(inputData);
+                _context.SaveChanges();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при сохранении результата в базу");
+                return StatusCode(500, "Ошибка сохранения");
+            }
         }
 
         private async Task SendDataToKafka(DataInputVariant dataInputVariant)
