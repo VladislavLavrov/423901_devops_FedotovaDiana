@@ -7,6 +7,7 @@ using Confluent.Kafka;
 
 namespace Calculator.Controllers
 {
+
     public class CalculatorController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -14,6 +15,7 @@ namespace Calculator.Controllers
 
         public CalculatorController(ApplicationDbContext context, KafkaProducerService<Null, string> producer)
         {
+
             _context = context;
             _producer = producer;
         }
@@ -27,7 +29,7 @@ namespace Calculator.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         public async Task<IActionResult> Calculate(double num1, double num2, Operation operation)
         {
             var dataInputVariant = new DataInputVariant
@@ -41,6 +43,20 @@ namespace Calculator.Controllers
             await SendDataToKafka(dataInputVariant);
 
             return RedirectToAction(nameof(Index));
+
+            // Вычисляем результат сразу
+            var result = CalculatorLibrary.CalculateOperation(num1, num2, operation);
+            dataInputVariant.Result = result.ToString();
+
+            // Сохраняем в базу
+            _context.DataInputVariants.Add(dataInputVariant);
+            _context.SaveChanges();
+
+            // Отправка данных в Kafka
+            await SendDataToKafka(dataInputVariant);
+
+            // Возвращаем JSON для AJAX
+            return Json(new { result = dataInputVariant.Result });
 
 
         }

@@ -156,13 +156,14 @@ async function calculate() {
 
     const data = await response.json();
 
-    if (data.message) updateDisplay(data.message);
-    else {
-        updateDisplay(data.result);
-        num1 = data.result;
-        num2 = "";
-        isSecond = false;
-    }
+        if (data.result !== undefined) {
+            updateDisplay(data.result);
+            num1 = data.result;
+            num2 = "";
+            isSecond = false;
+        } else if (data.message) {
+            updateDisplay(data.message);
+        }
 }
 
 // Анимация нажатия кнопок

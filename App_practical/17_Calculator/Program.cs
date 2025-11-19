@@ -15,14 +15,16 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddHttpClient();
+
+// Регистрируем Kafka Consumer и Producer
 builder.Services.AddHostedService<KafkaConsumerService>();
 builder.Services.AddSingleton<KafkaProducerHandler>();
 builder.Services.AddSingleton<KafkaProducerService<Null, string>>(sp =>
     new KafkaProducerService<Null, string>(sp.GetRequiredService<KafkaProducerHandler>().Producer));
 
-
 var app = builder.Build();
 
+// Конфигурация pipeline
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Calculator/Error");
@@ -39,3 +41,4 @@ app.MapControllerRoute(
     pattern: "{controller=Calculator}/{action=Index}/{id?}");
 
 app.Run();
+
