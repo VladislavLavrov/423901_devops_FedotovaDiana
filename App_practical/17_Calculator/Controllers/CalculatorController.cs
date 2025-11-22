@@ -100,8 +100,18 @@ namespace Calculator.Controllers
         private async Task SendDataToKafka(DataInputVariant dataInputVariant)
         {
             var json = JsonSerializer.Serialize(dataInputVariant);
-            await _producer.ProduceAsync("Fedotova", new Message<Null, string> { Value = json });
+            try
+            {
+                var deliveryResult = await _producer.ProduceAsync("Fedotova", new Message<Null, string> { Value = json });
+                _logger.LogInformation("Сообщение отправлено: {Topic} / Partition {Partition} / Offset {Offset}",
+                    deliveryResult.Topic, deliveryResult.Partition, deliveryResult.Offset);
+            }
+            catch (ProduceException<Null, string> ex)
+            {
+                _logger.LogError(ex, "Ошибка при отправке сообщения в Kafka");
+            }
         }
+
     }
 }
 

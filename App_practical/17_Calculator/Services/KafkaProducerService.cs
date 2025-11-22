@@ -12,8 +12,10 @@ namespace Calculator.Services
             _producer = producer;
         }
 
-        public Task ProduceAsync(string topic, Message<K, V> message)
-            => _producer.ProduceAsync(topic, message);
+        public Task<DeliveryResult<K, V>> ProduceAsync(string topic, Message<K, V> message)
+        {
+            return _producer.ProduceAsync(topic, message);
+        }
     }
 }
 
