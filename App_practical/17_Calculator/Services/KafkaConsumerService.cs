@@ -58,9 +58,8 @@ namespace Calculator.Services
                         var inputData = JsonSerializer.Deserialize<DataInputVariant>(cr.Message.Value);
 
                         // Расчёт результата
-                        inputData.Result = CalculatorLibrary
-                            .CalculateOperation(inputData.Operand_1, inputData.Operand_2, inputData.Type_operation)
-                            .ToString();
+                        inputData.Result = CalculatorLibrary.CalculateOperation(inputData.Operand_1, inputData.Operand_2, inputData.Type_operation);
+
 
                         // Отправляем результат на Callback
                         var httpClient = _clientFactory.CreateClient();

@@ -66,7 +66,7 @@ namespace Calculator.Controllers
 
                 // --- Мгновенный расчёт для UI ---
                 var result = CalculatorLibrary.CalculateOperation(num1, num2, op);
-
+                dataInputVariant.Result = result;
                 return Json(new { result = result.ToString() });
             }
             catch (ArgumentException ex)
@@ -99,7 +99,15 @@ namespace Calculator.Controllers
 
         private async Task SendDataToKafka(DataInputVariant dataInputVariant)
         {
-            var json = JsonSerializer.Serialize(dataInputVariant);
+            var json = JsonSerializer.Serialize(new
+            {
+                dataInputVariant.ID_DataInputVariant,
+                dataInputVariant.Operand_1,
+                dataInputVariant.Operand_2,
+                Type_operation = dataInputVariant.Type_operation.ToString(),
+                Result = dataInputVariant.Result?.ToString()  // Преобразуем в строку для Kafka
+            });
+
             try
             {
                 var deliveryResult = await _producer.ProduceAsync("Fedotova", new Message<Null, string> { Value = json });
@@ -111,6 +119,7 @@ namespace Calculator.Controllers
                 _logger.LogError(ex, "Ошибка при отправке сообщения в Kafka");
             }
         }
+
 
     }
 }
