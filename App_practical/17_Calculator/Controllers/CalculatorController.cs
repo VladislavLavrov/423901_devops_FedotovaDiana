@@ -66,7 +66,7 @@ namespace Calculator.Controllers
 
                 // --- Мгновенный расчёт для UI ---
                 var result = CalculatorLibrary.CalculateOperation(num1, num2, op);
-                dataInputVariant.Result = result;
+                dataInputVariant.Result = result.ToString();
                 return Json(new { result = result.ToString() });
             }
             catch (ArgumentException ex)

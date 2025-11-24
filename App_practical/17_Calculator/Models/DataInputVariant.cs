@@ -12,7 +12,7 @@ namespace Calculator.Models
         public Operation Type_operation { get; set; }
 
         [Column(TypeName = "varchar(128)")]
-        public double? Result { get; set; }
+        public string? Result { get; set; }
     }
 
     public enum Operation
