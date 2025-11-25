@@ -10,8 +10,6 @@ services:
       MARIADB_USER: webuser
       MARIADB_PASSWORD: password
       ASPNETCORE_ENVIRONMENT: Development
-      depends_on:
-        - mariadb
     volumes:
       - db_data:/var/lib/mysql
     ports:
@@ -22,7 +20,8 @@ services:
     container_name: web-app-calculator-17
     hostname: app
     build: 17_Calculator/
-
+    depends_on:
+        - mariadb
     ports:
       - "0.0.0.0:5017:5017"
 
