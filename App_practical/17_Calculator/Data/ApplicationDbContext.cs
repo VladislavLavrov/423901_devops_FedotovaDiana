@@ -1,17 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Calculator.Models;
+﻿using Calculator.Models;
+using Microsoft.EntityFrameworkCore;
 
-namespace Calculator.Data
+public class ApplicationDbContext : DbContext
 {
-    public class ApplicationDbContext : DbContext
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : base(options)
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options)
-        {
-        }
-
-        // Таблица, которая будет создана в базе данных
-        public DbSet<DataInputVariant> DataInputVariants { get; set; }
     }
+
+    public DbSet<DataInputVariant> DataInputVariants { get; set; }
 }
 
