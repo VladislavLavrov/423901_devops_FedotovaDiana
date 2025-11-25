@@ -50,7 +50,7 @@ namespace Calculator.Controllers
             var json = JsonSerializer.Serialize(data);
 
             return _producer.ProduceAsync(
-                "lavrov",                                 // название как в методичке
+                "Fedotova",                                 
                 new Message<Null, string> { Value = json }
             );
         }
