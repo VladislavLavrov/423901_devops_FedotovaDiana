@@ -25,7 +25,7 @@ namespace Calculator.Services
             config.GetSection("Kafka:ConsumerSettings").Bind(consumerConfig);
 
             // в приложении 4 имя topic берётся из Kafka:Topic-Name
-            _topic = config.GetValue<string>("Kafka:Topic-Name");
+            _topic = config.GetValue<string>("Kafka:TopicName");
 
             _kafkaConsumer = new ConsumerBuilder<Null, string>(consumerConfig).Build();
             _serviceProvider = serviceProvider;
