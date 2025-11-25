@@ -39,10 +39,33 @@ namespace Calculator.Controllers
                 Type_operation = request.Operation
             };
 
-            // отправка в Kafka
+            // Сохраняем временно с Result = null
+            _context.DataInputVariants.Add(variant);
+            await _context.SaveChangesAsync();
+
+            // Отправка в Kafka
             await SendDataToKafka(variant);
 
-            return Ok(new { message = "Данные отправлены в Kafka" });
+            // Возвращаем ID созданного объекта
+            return Ok(new { id = variant.ID_DataInputVariant });
+        }
+        [HttpGet("Result/{id}")]
+        public IActionResult GetResult(int id)
+        {
+            var variant = _context.DataInputVariants
+                .FirstOrDefault(x => x.ID_DataInputVariant == id);
+
+            if (variant == null)
+                return NotFound();
+
+            return Ok(new
+            {
+                id = variant.ID_DataInputVariant,
+                num1 = variant.Operand_1,
+                num2 = variant.Operand_2,
+                operation = variant.Type_operation,
+                result = variant.Result
+            });
         }
 
         private Task SendDataToKafka(DataInputVariant data)
@@ -59,11 +82,18 @@ namespace Calculator.Controllers
         [HttpPost("Callback")]
         public IActionResult Callback([FromBody] DataInputVariant model)
         {
-            _context.DataInputVariants.Add(model);
-            _context.SaveChanges();
+            var variant = _context.DataInputVariants
+                .FirstOrDefault(x => x.ID_DataInputVariant == model.ID_DataInputVariant);
+
+            if (variant != null)
+            {
+                variant.Result = model.Result;
+                _context.SaveChanges();
+            }
 
             return Ok();
         }
+
     }
 }
 

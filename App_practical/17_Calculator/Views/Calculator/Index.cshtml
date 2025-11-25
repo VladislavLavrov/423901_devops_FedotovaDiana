@@ -158,26 +158,28 @@ function backspace() {
                 })
             });
 
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText);
-            }
-
             const data = await response.json();
+            const id = data.id;
 
-            if (data.message) {
-                updateDisplay(data.message);
-            } else {
-                updateDisplay(data.result);
-                num1 = data.result.toString();
-                num2 = "";
-                isSecond = false;
-            }
+            const interval = setInterval(async () => {
+                const res = await fetch(`/Calculator/Result/${id}`);
+                const resultData = await res.json();
+
+                if (resultData.result !== null) {
+                    updateDisplay(resultData.result);
+                    num1 = resultData.result.toString();
+                    num2 = "";
+                    isSecond = false;
+                    clearInterval(interval);
+                }
+            }, 1000);
+
         } catch (err) {
             console.error("Ошибка:", err);
             updateDisplay("Ошибка сервера!");
         }
     }
+
 
 
 // Анимация нажатия кнопок
