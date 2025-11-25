@@ -9,6 +9,7 @@ services:
       MARIADB_DATABASE: 17_WebCalculatorDb
       MARIADB_USER: webuser
       MARIADB_PASSWORD: password
+      ASPNETCORE_ENVIRONMENT=Development
     ports:
       - "5037:3306"
 
