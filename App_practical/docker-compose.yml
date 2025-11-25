@@ -10,8 +10,6 @@ services:
       MARIADB_USER: webuser
       MARIADB_PASSWORD: password
       ASPNETCORE_ENVIRONMENT: Development
-    volumes:
-      - db_data:/var/lib/mysql
     ports:
       - "0.0.0.0:5037:3306"
 
