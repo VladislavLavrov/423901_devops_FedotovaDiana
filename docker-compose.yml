@@ -2,6 +2,6 @@
   web:
     container_name: 17-web-app-calculator-jenkins-3
     hostname: app
-    build: 17_Calculator/
+    build: App_practical/17_Calculator/
     ports:
       - "0.0.0.0:5217:5017"
