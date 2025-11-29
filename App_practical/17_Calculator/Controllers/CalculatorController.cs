@@ -2,11 +2,14 @@
 
 namespace Calculator.Controllers
 {
+
     public class CalculatorController : Controller
     {
+        
         // Отображение страницы
         public IActionResult Index()
         {
+            ViewData["Title"] = "Калькулятор";
             return View();
         }
 
