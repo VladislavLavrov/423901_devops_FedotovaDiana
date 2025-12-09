@@ -13,10 +13,6 @@ services:
     networks:
       - metrics-net
  
-networks:
-  metrics-net:
-    name: metrics-net
-
 
   renderer:
     image: grafana/grafana-image-renderer:latest
@@ -39,3 +35,7 @@ networks:
       GF_LOG_FILTERS: rendering:debug
     networks:
       - metrics-net
+
+networks:
+  metrics-net:
+    name: metrics-net
