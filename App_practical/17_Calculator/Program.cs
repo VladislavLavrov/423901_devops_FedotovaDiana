@@ -1,59 +1,38 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
-
-
-
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
-// Настройка OpenTelemetry для сбора метрик
 
-// Настройка OpenTelemetry для метрик
 builder.Services.AddOpenTelemetry()
     .WithMetrics(metrics =>
     {
-        // Настройка ресурса
         metrics.SetResourceBuilder(
             ResourceBuilder.CreateDefault()
-                .AddService(serviceName: "CalculatorApp", serviceVersion: "1.0.0")
-                .AddTelemetrySdk()
-                .AddEnvironmentVariableDetector()
+                .AddService("CalculatorApp", serviceVersion: "1.0.0")
         );
 
-        // Добавление метрик для ASP.NET Core
         metrics.AddAspNetCoreInstrumentation();
         metrics.AddRuntimeInstrumentation();
         metrics.AddHttpClientInstrumentation();
 
-
-        // Добавление инструментации для HTTP запросов
-        metrics.AddHttpClientInstrumentation();
-        metrics.AddAspNetCoreInstrumentation();
-
-        // Экспорт метрик в Prometheus
         metrics.AddPrometheusExporter();
     });
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// на время лабы можно отключить, чтобы Prometheus не ловил редиректы
+// app.UseHttpsRedirection();
+
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseAuthorization();
 
 app.MapControllerRoute(
@@ -61,4 +40,5 @@ app.MapControllerRoute(
     pattern: "{controller=Calculator}/{action=Index}/{id?}");
 
 app.MapPrometheusScrapingEndpoint();
+
 app.Run();
