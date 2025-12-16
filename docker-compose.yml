@@ -1,4 +1,16 @@
 services:
+
+  calculator:
+    build: .
+    ports:
+      - "5017:5017"
+    environment:
+      ASPNETCORE_URLS: "http://+:5017"
+      ASPNETCORE_ENVIRONMENT: "Production"
+    networks:
+      - metrics-net-17
+
+
   prometheus:
     image: prom/prometheus:latest
     user: root
