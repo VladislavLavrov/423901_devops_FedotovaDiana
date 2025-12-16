@@ -26,10 +26,10 @@ builder.Services.AddOpenTelemetry()
         );
 
         // Добавление метрик для ASP.NET Core
-        metrics.AddMeter("Microsoft.AspNetCore.Hosting");
-        metrics.AddMeter("Microsoft.AspNetCore.Server.Kestrel");
-        metrics.AddMeter("Microsoft.AspNetCore.Http.Connections");
-        metrics.AddMeter("System.Runtime");
+        metrics.AddAspNetCoreInstrumentation();
+        metrics.AddRuntimeInstrumentation();
+        metrics.AddHttpClientInstrumentation();
+
 
         // Добавление инструментации для HTTP запросов
         metrics.AddHttpClientInstrumentation();
