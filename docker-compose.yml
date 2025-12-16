@@ -1,14 +1,13 @@
 services:
-
   calculator:
-    build: .
+    build: App_practical/17_Calculator/
     ports:
-      - "5017:5017"
+      - "5217:5017"
     environment:
       ASPNETCORE_URLS: "http://+:5017"
-      ASPNETCORE_ENVIRONMENT: "Production"
     networks:
       - metrics-net-17
+
 
 
   prometheus:
